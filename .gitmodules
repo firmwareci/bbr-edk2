@@ -1,3 +1,6 @@
 [submodule "edk2"]
 	path = edk2
 	url = https://github.com/tianocore/edk2.git
+[submodule "edk2-test"]
+	path = edk2-test
+	url = git@github.com:tianocore/edk2-test.git

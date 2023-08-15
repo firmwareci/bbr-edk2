@@ -5,6 +5,12 @@ tasks:
     cmds:
       - task: build
 
+  setup:
+    desc: "Set up the build environment"
+    cmds:
+      - git submodule update --init --checkout
+      - ln -s edk2-test/uefi-sct/SctPkg/ SctPkg
+
   build:
     cmds:
       - task: build:ovmf
@@ -25,6 +31,11 @@ tasks:
     dir: ./edk2
     cmds:
       - ./OvmfPkg/build.sh -b DEBUG -a X64 -t GCC5
+
+  build:sct:
+    desc: "Build the ARM UEFI SCT Tooling"
+    cmds:
+      - ./SctPkg/build.sh AARCH64 GCC RELEASE
 
   build:app:
     cmds:
@@ -49,7 +60,6 @@ tasks:
       APP: ./app/Build/RELEASE_GCC5/X64
       OVMF: ./edk2/Build/OvmfX64/DEBUG_GCC5/FV/OVMF.fd
     cmds:
-      - echo "OVMF $OVMF APP $APP"
       - qemu-system-x86_64 -machine q35,accel=kvm -cpu host,-vmx -m 1G
        -bios "$OVMF" -display none -nodefaults -serial stdio
        -drive format=raw,file=fat:rw:$APP
