@@ -1,0 +1,55 @@
+version: "3"
+
+tasks:
+  default:
+    cmds:
+      - task: build
+
+  build:
+    cmds:
+      - task: build:ovmf
+      - task: build:app
+
+  build:ovmf:
+    cmds:
+      - task: build:ovmf:x64
+
+  build:ovmf:x64:
+    desc: "Build the OVMF Package"
+    sources:
+      - ./OvmfPkg/*
+      - ./MdeModulePkg/*
+      - ./MdePkg/*
+    generates:
+      - ./Build/OvmfX64/DEBUG_GCC5/FV/OVMF.fd
+    dir: ./edk2
+    cmds:
+      - ./OvmfPkg/build.sh -b DEBUG -a X64 -t GCC5
+
+  build:app:
+    cmds:
+      - task: build:app:x64
+
+  build:app:x64:
+    desc: "Build the UEFI Application"
+    sources:
+      - app/*
+    generates:
+      - app/Build/RELEASE_GCC5/X64/HelloWorld.efi
+    cmds:
+      - ./build.sh
+
+  run:qemu:
+    cmds:
+      - task: run:qemu:x64
+
+  run:qemu:x64:
+    desc: "Run EFI Application in Qemu with OVMF"
+    env:
+      APP: ./app/Build/RELEASE_GCC5/X64
+      OVMF: ./edk2/Build/OvmfX64/DEBUG_GCC5/FV/OVMF.fd
+    cmds:
+      - echo "OVMF $OVMF APP $APP"
+      - qemu-system-x86_64 -machine q35,accel=kvm -cpu host,-vmx -m 1G
+       -bios "$OVMF" -display none -nodefaults -serial stdio
+       -drive format=raw,file=fat:rw:$APP
